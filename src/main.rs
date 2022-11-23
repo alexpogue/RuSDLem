@@ -18,9 +18,10 @@ extern crate sdl2;
 
 use sdl2::event::Event;
 use sdl2::keyboard::Keycode;
-use sdl2::pixels::{Color, PixelFormatEnum};
+use sdl2::pixels::{Color};
 use sdl2::rect::Point;
-use std::convert::TryInto;
+use sdl2::rect::{Rect};
+//use sdl2_gfx::primitives::DrawRenderer;
 
 fn main() -> Result<(), String> {
 
@@ -37,32 +38,18 @@ fn main() -> Result<(), String> {
         .build()
         .map_err(|e| e.to_string())?;
     let mut canvas = window.into_canvas().software().build().map_err(|e| e.to_string())?;
-    let creator = canvas.texture_creator();
-
-    //setup the background image, light grey with a blue diagonal line from upper right to lower left
-    let mut bg_texture = creator
-        .create_texture_target(PixelFormatEnum::RGBA8888, width, height)
-        .map_err(|e| e.to_string())?;
-
-    canvas.with_texture_canvas(&mut bg_texture, |texture_canvas| {
-            texture_canvas.set_draw_color(Color::RGBA(230,230,230,255));
-            texture_canvas.clear();
-            texture_canvas.set_draw_color(Color::RGBA(0,0,255,255));
-            { 
-                let w:i32 = width.try_into().unwrap();
-                let h:i32 = height.try_into().unwrap();
-                texture_canvas.draw_line(Point::new(w-1,0),
-                                         Point::new(0,h-1)).unwrap();
-            }
-        }).map_err(|e| e.to_string())?;
 
     let mut event_pump = sdl_context.event_pump().unwrap();
 
     'mainloop: loop {
         let event = event_pump.wait_event(); //blocking wait for events
         
-        canvas.copy(&bg_texture, None, None).unwrap();
-                
+        canvas.set_draw_color(Color::RGBA(255,255,255,255));
+        canvas.clear();
+
+        canvas.set_draw_color(Color::RGBA(0,0,0,255));
+        canvas.fill_rect(Rect::new(10, 10, 10, 10)).unwrap();
+
         match event {
             Event::KeyDown {keycode: Some(Keycode::Escape),..} | Event::Quit { .. } 
                 => { break 'mainloop; }
@@ -75,7 +62,8 @@ fn main() -> Result<(), String> {
                 //draw a red line from the upper left corner to the current mouse position
                 canvas.set_draw_color(Color::RGBA(255,0,0,255));
                 canvas.draw_line(Point::new(0,0), Point::new(x,y)).unwrap();
-                ()}
+                ()
+            }
             _ => {
                 println!("{:?}",event); //Print out other events to the "console"
                 ()}
